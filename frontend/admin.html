@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Never Have I Ever Admin 💼</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #feca57);
+      background-size: 400%;
+      animation: gradientShift 15s ease infinite;
+      font-family: 'Poppins', sans-serif;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    .font-comic {
+      font-family: 'Comic Neue', cursive;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-4xl font-comic text-center text-white mb-10">🔥 Admin Dashboard - Never Have I Ever 🔥</h1>
+    
+    <div id="confessions" class="space-y-6"></div>
+  </div>
+
+  <script>
+    fetch('http://localhost:5000/confessions')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('confessions');
+
+        data.forEach((entry, index) => {
+          const div = document.createElement('div');
+          div.className = "card p-6";
+
+          const answerList = entry.answers.map((ans, i) => 
+            `<li class="mb-1"><span class="font-semibold">${i + 1}. ${ans.question}</span><br/><span class="text-gray-600">Answer: ${ans.answer}</span></li>`
+          ).join("");
+
+          div.innerHTML = `
+            <div class="mb-4">
+              <h2 class="text-xl font-bold text-pink-600">${entry.nickname} <span class="text-sm text-gray-500">(${entry.age} yrs)</span></h2>
+              <p class="text-gray-700">Score: <span class="font-semibold">${entry.score}/${entry.total}</span> (${entry.percent}%)</p>
+              <p class="text-sm text-gray-500">Time: ${entry.timestamp}</p>
+            </div>
+            <details class="mt-2 bg-yellow-50 rounded-xl p-4">
+              <summary class="cursor-pointer font-semibold text-purple-600">View Full Answers</summary>
+              <ul class="mt-3 text-gray-800 text-sm list-disc pl-5">${answerList}</ul>
+            </details>
+          `;
+
+          container.appendChild(div);
+        });
+      })
+      .catch(err => {
+        document.getElementById('confessions').innerHTML = '<p class="text-white">Error loading confessions.</p>';
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
