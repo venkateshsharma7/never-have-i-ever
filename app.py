@@ -13,14 +13,12 @@ client = MongoClient(os.getenv("MONGO_URI"))
 db = client["never_game"]
 collection = db["confessions"]
 
-@app.route('/')
-def home():
-    return "🔥 Flask backend is running!"
-
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
         data = request.get_json()
+        print("🔥 Incoming data:", data)  # 🔍 Debug line
+
         entry = {
             "nickname": data.get("nickname", "Anonymous"),
             "age": data.get("age", "Unknown"),
@@ -32,9 +30,11 @@ def submit():
         }
         collection.insert_one(entry)
         return jsonify({"message": "Data saved successfully!"}), 200
+
     except Exception as e:
-        print("❌ Error:", e)
+        print("❌ Error during /submit:", e)  # 🔥 This will show the exact crash
         return jsonify({"message": "Error saving data"}), 500
+
 
 
 if __name__ == '__main__':
