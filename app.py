@@ -4,6 +4,8 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 from datetime import datetime
+import traceback
+
 
 app = Flask(__name__)
 CORS(app)
@@ -36,8 +38,10 @@ def submit():
         collection.insert_one(entry)
         return jsonify({"message": "Data saved successfully!"}), 200
 
+    
     except Exception as e:
-        print("❌ Error during /submit:", e)  # This will show exact problem
+        print("❌ Error during /submit:")
+        traceback.print_exc()  # 👈 this prints the full error traceback
         return jsonify({"message": "Error saving data"}), 500
 
 @app.route('/confessions', methods=['GET'])
