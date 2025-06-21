@@ -4,14 +4,26 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-import traceback
-
+from pymongo.uri_parser import parse_uri
 
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
 
-client = MongoClient(os.getenv("MONGO_URI"))
+# 👇 Parse connection manually to avoid +srv DNS errors and TLS issues
+uri = os.getenv("MONGO_URI")
+parsed = parse_uri(uri)
+host = parsed['nodelist'][0][0]
+username = parsed['username']
+password = parsed['password']
+
+client = MongoClient(
+    f"mongodb://{username}:{password}@{host}/?ssl=true&retryWrites=true&w=majority&tlsAllowInvalidCertificates=true",
+    tls=True,
+    tlsAllowInvalidCertificates=True,
+    serverSelectionTimeoutMS=10000
+)
+
 db = client["never_game"]
 collection = db["confessions"]
 
@@ -23,7 +35,7 @@ def home():
 def submit():
     try:
         data = request.get_json()
-        print("🔥 Incoming data:", data)  # Debug line to check what's received
+        print("🔥 Incoming data:", data)
 
         entry = {
             "nickname": data.get("nickname", "Anonymous"),
@@ -38,10 +50,10 @@ def submit():
         collection.insert_one(entry)
         return jsonify({"message": "Data saved successfully!"}), 200
 
-    
     except Exception as e:
+        import traceback
         print("❌ Error during /submit:")
-        traceback.print_exc()  # 👈 this prints the full error traceback
+        traceback.print_exc()
         return jsonify({"message": "Error saving data"}), 500
 
 @app.route('/confessions', methods=['GET'])
